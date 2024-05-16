@@ -19,13 +19,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma.h"
+#include "i2c.h"
 #include "tim.h"
+#include "usb_device.h"
 #include "gpio.h"
-#include "dshot.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "dshot.h"
+#include "imu.h"
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,11 +101,32 @@ int main(void)
   MX_DMA_Init();
   MX_TIM2_Init();
   MX_TIM5_Init();
+  MX_I2C1_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+
+  // initialize mpu
+  bool mpu_init = init_mpu6050();
+
+  gyro drone_gyro = {0,0,0};
+  accel drone_accel = {0,0,0};
+
+  mpu drone_mpu = {
+	  &drone_gyro,
+	  &drone_accel
+  };
 
   // initialize dshot protocol for communication with esc's
   dshot_init(DSHOT300);
 
+  ////////// Test buffers ////////////
+  // message buffers for mpu position transmission over COM
+  char accel_x[20];
+  char accel_y[20];
+  char accel_z[20];
+  char gyro_x[20];
+  char gyro_y[20];
+  char gyro_z[20];
 
   /* USER CODE END 2 */
 
@@ -111,16 +135,37 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  HAL_Delay(2000); // 2 second delay
+	  if(mpu_init) {
+		/* USER CODE END WHILE */
+		/* USER CODE BEGIN 3 */
+		CDC_Transmit_FS((uint8_t*)"Current Position:\n\r", strlen("Current Position:\n\r"));
 
-	for(uint16_t i = 0 ; i <= 20 ; i++) {
-		dshot_tx(motors); // Transmit desired motor speeds to each motor
-		HAL_Delay(1000); // 1s timeout
-		motors[0] += (100 * i);
-		motors[1] += (100 * i);
-		motors[2] += (100 * i);
-		motors[3] += (100 * i);
-	}
+		// read positional data from mpu
+		read_mpu6050(&drone_mpu);
 
+		// write to message buffers
+		sprintf(accel_x, "Accel X: %.2f g\n\r", drone_mpu.mpu_accel->x);
+		sprintf(accel_y, "Accel Y: %.2f g\n\r", drone_mpu.mpu_accel->y);
+		sprintf(accel_z, "Accel Z: %.2f g\n\n\r", drone_mpu.mpu_accel->z);
+
+		sprintf(gyro_x, "Gyro X: %.2f dps\n\r", drone_mpu.mpu_gyro->x);
+		sprintf(gyro_y, "Gyro Y: %.2f dps\n\r", drone_mpu.mpu_gyro->y);
+		sprintf(gyro_z, "Gyro Z: %.2f dps\n\n\n\n\r", drone_mpu.mpu_gyro->z);
+
+		// write position data to COM port
+		CDC_Transmit_FS((uint8_t*)accel_x, strlen(accel_x));
+		CDC_Transmit_FS((uint8_t*)accel_y, strlen(accel_y));
+		CDC_Transmit_FS((uint8_t*)accel_z, strlen(accel_z));
+
+		CDC_Transmit_FS((uint8_t*)gyro_x, strlen(gyro_x));
+		CDC_Transmit_FS((uint8_t*)gyro_y, strlen(gyro_y));
+		CDC_Transmit_FS((uint8_t*)gyro_z, strlen(gyro_z));
+	  } else {
+		  CDC_Transmit_FS((uint8_t*)"Failed to initialize MPU\n\r", strlen("Failed to initialize MPU\n\r"));
+		  CDC_Transmit_FS((uint8_t*)"Retrying to MPU initialization\n\r", strlen("Retrying to MPU initialization\n\r"));
+		  mpu_init = init_mpu6050();
+	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -146,7 +191,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 16;
+  RCC_OscInitStruct.PLL.PLLN = 192;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
