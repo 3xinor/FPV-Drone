@@ -1,0 +1,4 @@
+../Core/Src/imu.c:21:13:read_accel	1
+../Core/Src/imu.c:36:13:read_gyro	1
+../Core/Src/imu.c:52:6:init_mpu6050	2
+../Core/Src/imu.c:85:6:read_mpu6050	1
