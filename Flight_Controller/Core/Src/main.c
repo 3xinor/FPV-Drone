@@ -21,6 +21,7 @@
 #include "dma.h"
 #include "i2c.h"
 #include "tim.h"
+#include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
 
@@ -28,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "dshot.h"
 #include "imu.h"
+#include "ibus.h"
 #include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
@@ -49,7 +51,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t iBus_rx_buffer[IBUS_BUFFER_SIZE];
+ibus_rx_t ibus_rx_struct = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,11 +84,8 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
-  uint16_t motor0_speed = 0; // up-to 2000
-  uint16_t motor1_speed = 0; // up-to 2000
-  uint16_t motor2_speed = 0; // up-to 2000
-  uint16_t motor3_speed = 0; // up-to 2000
-  uint16_t motors[4] = {motor0_speed, motor1_speed, motor2_speed, motor3_speed};
+  // up-to 2000 motor speed
+  uint16_t motors[4] = {0, 0, 0, 0};
 
   /* USER CODE END Init */
 
@@ -103,6 +103,7 @@ int main(void)
   MX_TIM5_Init();
   MX_I2C1_Init();
   MX_USB_DEVICE_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   // initialize mpu
@@ -119,14 +120,8 @@ int main(void)
   // initialize dshot protocol for communication with esc's
   dshot_init(DSHOT300);
 
-  ////////// Test buffers ////////////
-  // message buffers for mpu position transmission over COM
-  char accel_x[20];
-  char accel_y[20];
-  char accel_z[20];
-  char gyro_x[20];
-  char gyro_y[20];
-  char gyro_z[20];
+  // initialize ibus count
+  uint8_t ibus_rx_count = 0;
 
   /* USER CODE END 2 */
 
@@ -135,35 +130,28 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_Delay(2000); // 2 second delay
-	  if(mpu_init) {
-		/* USER CODE END WHILE */
-		/* USER CODE BEGIN 3 */
+
+    /* USER CODE BEGIN 3 */
+	if(mpu_init) { // check if mpu has initialized correctly
 		CDC_Transmit_FS((uint8_t*)"Current Position:\n\r", strlen("Current Position:\n\r"));
 
 		// read positional data from mpu
 		read_mpu6050(&drone_mpu);
 
-		// write to message buffers
-		sprintf(accel_x, "Accel X: %.2f g\n\r", drone_mpu.mpu_accel->x);
-		sprintf(accel_y, "Accel Y: %.2f g\n\r", drone_mpu.mpu_accel->y);
-		sprintf(accel_z, "Accel Z: %.2f g\n\n\r", drone_mpu.mpu_accel->z);
-
-		sprintf(gyro_x, "Gyro X: %.2f dps\n\r", drone_mpu.mpu_gyro->x);
-		sprintf(gyro_y, "Gyro Y: %.2f dps\n\r", drone_mpu.mpu_gyro->y);
-		sprintf(gyro_z, "Gyro Z: %.2f dps\n\n\n\n\r", drone_mpu.mpu_gyro->z);
-
-		// write position data to COM port
-		CDC_Transmit_FS((uint8_t*)accel_x, strlen(accel_x));
-		CDC_Transmit_FS((uint8_t*)accel_y, strlen(accel_y));
-		CDC_Transmit_FS((uint8_t*)accel_z, strlen(accel_z));
-
-		CDC_Transmit_FS((uint8_t*)gyro_x, strlen(gyro_x));
-		CDC_Transmit_FS((uint8_t*)gyro_y, strlen(gyro_y));
-		CDC_Transmit_FS((uint8_t*)gyro_z, strlen(gyro_z));
+		// read desired position data from Rx receiver every 100 cycles
+		if(ibus_rx_count == 100) {
+				if(HAL_UART_Receive(&huart1, iBus_rx_buffer, IBUS_BUFFER_SIZE, 1000) == HAL_OK) {
+						// Check if the received data is a valid iBus packet
+						if (iBus_rx_buffer[1] == 0x20) {
+							// Process iBus packet
+							process_iBus_data(iBus_rx_buffer, &ibus_rx_struct);
+						}
+				}
+				// reset count
+				ibus_rx_count = 0;
+		} else {ibus_rx_count++;}
 	  } else {
-		  CDC_Transmit_FS((uint8_t*)"Failed to initialize MPU\n\r", strlen("Failed to initialize MPU\n\r"));
-		  CDC_Transmit_FS((uint8_t*)"Retrying to MPU initialization\n\r", strlen("Retrying to MPU initialization\n\r"));
+		  CDC_Transmit_FS((uint8_t*)"Failed to initialize MPU, retrying...\n\r", strlen("Failed to initialize MPU\n\r"));
 		  mpu_init = init_mpu6050();
 	  }
     /* USER CODE BEGIN 3 */

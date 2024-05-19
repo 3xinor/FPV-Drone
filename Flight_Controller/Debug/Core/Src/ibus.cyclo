@@ -1,0 +1,5 @@
+../Core/Src/ibus.c:17:15:normalize	1
+../Core/Src/ibus.c:21:13:normalize_data	2
+../Core/Src/ibus.c:41:13:debug_ibus_channels	1
+../Core/Src/ibus.c:52:13:debug_ibus_packets	2
+../Core/Src/ibus.c:80:6:process_iBus_data	2
