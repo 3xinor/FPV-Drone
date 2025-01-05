@@ -72,6 +72,6 @@ void dshot_init(dshot_type_e dhsot_type);
 /*
  * Writes the desired motor speeds to each esc
  */
-void dshot_tx(uint16_t* motor_values);
+void dshot_tx(double* motor_values);
 
 #endif /* INC_DSHOT_H_ */

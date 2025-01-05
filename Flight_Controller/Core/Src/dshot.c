@@ -33,20 +33,6 @@ static void dshot_prepare_dmabuffer_all(uint16_t* motor_values);
 static void dshot_dma_start();
 static void dshot_enable_dma_request();
 
-/* Function Definitions */
-
-void dshot_init(dshot_type_e dshot_type) {
-	dshot_set_timer(dshot_type);
-	dshot_put_tc_callback_function();
-	dshot_start_pwm();
-}
-
-void dshot_tx(uint16_t* motor_values) {
-	dshot_prepare_dmabuffer_all(motor_values);
-	dshot_dma_start();
-	dshot_enable_dma_request();
-}
-
 /* Static Function Definitions */
 
 static uint32_t dshot_choose_type(dshot_type_e dshot_type) {
@@ -187,4 +173,18 @@ static void dshot_enable_dma_request() {
 	__HAL_TIM_ENABLE_DMA(MOTOR_1_TIM, TIM_DMA_CC2);
 	__HAL_TIM_ENABLE_DMA(MOTOR_2_TIM, TIM_DMA_CC3);
 	__HAL_TIM_ENABLE_DMA(MOTOR_3_TIM, TIM_DMA_CC4);
+}
+
+/* Function Definitions */
+
+void dshot_init(dshot_type_e dshot_type) {
+	dshot_set_timer(dshot_type);
+	dshot_put_tc_callback_function();
+	dshot_start_pwm();
+}
+
+void dshot_tx(double* motor_values) {
+	dshot_prepare_dmabuffer_all(motor_values);
+	dshot_dma_start();
+	dshot_enable_dma_request();
 }

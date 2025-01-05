@@ -1,0 +1,6 @@
+../Core/Src/imu.c:20:13:read_accel	48	static
+../Core/Src/imu.c:35:13:read_gyro	48	static
+../Core/Src/imu.c:51:6:init_mpu6050	32	static
+../Core/Src/imu.c:84:6:read_mpu6050	16	static
+../Core/Src/imu.c:89:6:calibrate_mpu6050	48	static
+../Core/Src/imu.c:126:6:signal_init_fail	16	static

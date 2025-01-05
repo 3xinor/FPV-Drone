@@ -85,7 +85,7 @@ int main(void)
   /* USER CODE BEGIN Init */
 
   // up-to 2000 motor speed
-  uint16_t motors[4] = {0, 0, 0, 0};
+  double motors[4] = {0, 0, 0, 0};
 
   /* USER CODE END Init */
 
@@ -150,6 +150,16 @@ int main(void)
 				// reset count
 				ibus_rx_count = 0;
 		} else {ibus_rx_count++;}
+
+		/* PID Controls */
+
+		// testing spinning motor
+		char test_motor_buffer[50];
+		sprintf(test_motor_buffer, "Motor 0 Speed: %.02f\n\r", ibus_rx_struct.ch3);
+		motors[0] = ibus_rx_struct.ch3;
+		dshot_tx(motors);
+		CDC_Transmit_FS((uint8_t*)test_motor_buffer, strlen(test_motor_buffer));
+
 	  } else {
 		  CDC_Transmit_FS((uint8_t*)"Failed to initialize MPU, retrying...\n\r", strlen("Failed to initialize MPU\n\r"));
 		  mpu_init = init_mpu6050();

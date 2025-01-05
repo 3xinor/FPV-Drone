@@ -24,7 +24,7 @@ static void normalize_data(uint16_t* channels, ibus_rx_t* ibus_rx_struct_ptr) {
 	/* normalize joystick values to be within -1.0 and 1.0 for pitch/roll/yaw and 0.0 to 1.0 for throttle */
 	ibus_rx_struct_ptr->ch1 = normalize(channels[0], 4000, 56000, -100, 100), sum += ibus_rx_struct_ptr->ch1;
 	ibus_rx_struct_ptr->ch2 = normalize(channels[1], 4000, 56000, -100, 100), sum += ibus_rx_struct_ptr->ch2;
-	ibus_rx_struct_ptr->ch3 = normalize(channels[2], 4800, 56000, 0, 100), sum += ibus_rx_struct_ptr->ch3;
+	ibus_rx_struct_ptr->ch3 = normalize(channels[2], 4800, 56000, 0, 2000), sum += ibus_rx_struct_ptr->ch3;
 	ibus_rx_struct_ptr->ch4 = normalize(channels[3], 4000, 56000, -100, 100), sum += ibus_rx_struct_ptr->ch4;
 
 	/* normalize switch values to be between 0.0 and 1.0 */
