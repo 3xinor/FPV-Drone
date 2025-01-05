@@ -60,8 +60,8 @@ all: main-build
 main-build: ESC_Configurator.elf secondary-outputs
 
 # Tool invocations
-ESC_Configurator.elf ESC_Configurator.map: $(OBJS) $(USER_OBJS) /Users/dave/Repos/FPV-Drone/ESC\ Configurator/STM32F401CCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "ESC_Configurator.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/dave/Repos/FPV-Drone/ESC Configurator/STM32F401CCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ESC_Configurator.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ESC_Configurator.elf ESC_Configurator.map: $(OBJS) $(USER_OBJS) /Users/dave/Repos/FPV-Drone/ESC_Configurator/STM32F401CCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "ESC_Configurator.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/dave/Repos/FPV-Drone/ESC_Configurator/STM32F401CCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ESC_Configurator.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

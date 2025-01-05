@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include "i2c.h"
 
+//#define IMU_DEBUG
+
 #define MPU6050_ADDR			0xD0
 
 #define SMPLRT_DIV_REG 			0x19
@@ -38,6 +40,7 @@ typedef struct {
 typedef struct {
 	gyro* mpu_gyro;
 	accel* mpu_accel;
+	float temp;
 }mpu;
 
 
@@ -49,8 +52,9 @@ typedef struct {
 bool init_mpu6050();
 
 /*
- * reads mpu raw data and returns 3-axis gyroscope and 3 axis accelerometer values
- * in the form of a simplified struct
+ * reads mpu raw data and returns 3-axis gyroscope, 3 axis accelerometer values, and temperature
+ * in the form of a simplified struct with units {degrees per second, acceleration in g, and degrees Celsius}
+ * respectively.
  */
 void read_mpu6050(mpu* drone_mpu);
 

@@ -1,0 +1,6 @@
+../Core/Src/imu.c:20:13:read_accel	1
+../Core/Src/imu.c:35:13:read_gyro	1
+../Core/Src/imu.c:51:6:init_mpu6050	2
+../Core/Src/imu.c:84:6:read_mpu6050	1
+../Core/Src/imu.c:89:6:calibrate_mpu6050	2
+../Core/Src/imu.c:126:6:signal_init_fail	2

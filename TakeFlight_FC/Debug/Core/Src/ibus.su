@@ -1,0 +1,3 @@
+../Core/Src/ibus.c:19:15:normalize	56	static
+../Core/Src/ibus.c:23:13:normalize_data	32	static
+../Core/Src/ibus.c:82:6:process_iBus_data	56	static
